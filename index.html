@@ -95,7 +95,9 @@ function card(x,stale){
   else if(x.st==="WATCH"){el.append(h("div","mute","Not confirmed: "+Object.entries(s.conditions).filter(e=>!e[1]).map(e=>e[0].replace(/_/g," ")).join(", ")))}
   const b=h("div","btns");
   if(x.st==="CONFIRMED"&&!stale){b.append(copyBtn("entry",num(p.entry)),copyBtn("stop",num(p.stop)),copyBtn("target",num(p.target)))}
-  const a=h("a","btn go","Open on Coinbase");a.href="https://www.coinbase.com/en-au/advanced-trade/spot/"+encodeURIComponent(c.pair);a.target="_blank";a.rel="noopener";b.append(a);el.append(b);
+  const pr=encodeURIComponent(c.pair),web="https://www.coinbase.com/en-au/advanced-trade/spot/"+pr;
+  const ap=h("a","btn go","Open Coinbase app");ap.href="intent://www.coinbase.com/advanced-trade/spot/"+pr+"#Intent;scheme=https;package=com.coinbase.android;S.browser_fallback_url="+encodeURIComponent(web)+";end";b.append(ap);
+  const a=h("a","btn","Website");a.href=web;a.target="_blank";a.rel="noopener";b.append(a);el.append(b);
   if(x.st==="CONFIRMED")el.append(h("div","foot","Manual trade only. NightOwl has placed no order. Check the live price, and set your own stop on Coinbase."));
   return el}
 function group(list){
