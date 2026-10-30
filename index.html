@@ -43,6 +43,8 @@ a.btn.go{background:var(--blue)}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#0D1428;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;font-size:13px;padding-left:2px;padding-right:2px;background:none;border-radius:0;color:var(--mute);padding:14px 0;min-height:56px}
 nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
+.plain{margin:10px 0;padding:9px 11px;background:#0F2240;border-radius:8px;font-size:14px;line-height:1.5}
+.learn h3{margin:14px 0 6px;font-size:16px}.learn p,.learn li{font-size:14px;color:var(--mute);margin:4px 0}.learn li b{color:var(--text)}
 .foot{color:var(--mute);font-size:13px;padding:8px 0 0}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
@@ -50,7 +52,7 @@ nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
 <div class="bar"><i id="prog"></i></div>
 <div id="warn"></div>
 <main id="view"></main>
-<nav><button data-t="opp" class="on">Now</button><button data-t="watch">Watchlist</button><button data-t="hist">Alerts</button><button data-t="res">Research</button><button data-t="health">Health</button></nav>
+<nav><button data-t="opp" class="on">Now</button><button data-t="watch">Watchlist</button><button data-t="hist">Alerts</button><button data-t="res">Research</button><button data-t="more">More</button></nav>
 <script>
 const TZ="Australia/Sydney",$=s=>document.querySelector(s);
 const fmtT=t=>new Date(t*1000).toLocaleString("en-AU",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
@@ -76,7 +78,7 @@ function render(){
   const w=$("#warn");w.replaceChildren();
   if(stale&&D.l){w.append(h("div","warn","The last scan was "+age+" minutes ago. Do not act on anything below until a fresh scan runs. Check the Health tab."))}
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
-  const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,res:vRes,health:vHealth})[tab](v,stale);
+  const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,res:vRes,more:vMore})[tab](v,stale);
 }
 function copyBtn(label,val){const b=h("button",0,"Copy "+label);b.onclick=async()=>{try{await navigator.clipboard.writeText(String(val));b.textContent="Copied"}catch(e){b.textContent=String(val)}};return b}
 function card(x,stale){
@@ -90,6 +92,11 @@ function card(x,stale){
   cell("Bid",num(c.bid));cell("Ask",num(c.ask));cell("RSI / volume",s.rsi.toFixed(0)+" / "+s.rel_volume.toFixed(2)+"x");
   if(p.entry){cell("Entry",num(p.entry));cell("Do not chase above",num(p.max_entry));cell("Stop",num(p.stop)+" (−"+p.risk_pct.toFixed(1)+"%)");cell("Target",num(p.target));cell("Net reward/risk",p.net_rr.toFixed(2));cell("Spread",p.spread_pct.toFixed(2)+"%")}
   el.append(g);
+  const pl=h("div","plain");
+  if(x.st==="CONFIRMED")pl.textContent="In plain English: every check passed. If you buy near "+num(p.entry)+", you would sell if the price falls to "+num(p.stop)+" (a small loss) or rises to "+num(p.target)+" (a profit). Only act if the scan above is under 5 minutes old and the live price in Coinbase is still below "+num(p.max_entry)+".";
+  else if(x.st==="BLOCKED")pl.textContent="In plain English: it looked like a buy signal, but a safety check failed (see why below). Do not buy this one.";
+  else pl.textContent="In plain English: not ready. Some checks pass but not all. Do nothing. NightOwl will message you if it turns into a full signal.";
+  el.append(pl);
   if(p.entry)el.append(h("div","mute","On "+p.position+": about +"+p.profit_if_target_net.toFixed(2)+" at target or "+p.loss_if_stop_net.toFixed(2)+" at stop, after assumed 0.8% costs. Estimates only."));
   if(p.reasons&&p.reasons.length&&x.st!=="WATCH"){const rs=h("div","reasons");rs.append(h("b",0,"Why blocked: "),p.reasons.join("; "));el.append(rs)}
   else if(x.st==="WATCH"){el.append(h("div","mute","Not confirmed: "+Object.entries(s.conditions).filter(e=>!e[1]).map(e=>e[0].replace(/_/g," ")).join(", ")))}
@@ -144,6 +151,14 @@ function vRes(v){
     const csv=[cols.join(",")].concat(rs.map(r=>cols.map(c=>q(c==="created"?new Date(r.created*1000).toISOString():r[c])).join(","))).join("\n");
     const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="nightowl-paper.csv";a.click()};
   b.append(dl);el.append(b);v.append(el)}
+function vMore(v){
+  const l=h("div","card learn"),add=(t,items)=>{l.append(h("h3",0,t));items.forEach(i=>{const e=h("li");e.append(h("b",0,i[0]+": "),i[1]);l.append(e)})};
+  l.append(h("div","pair","Learn the basics"),h("p",0,"NightOwl is a watcher, not a fortune teller. A signal means a pattern that often comes before a rise has appeared. Many signals will still lose money."));
+  add("Words you will see",[["Entry","the price you would buy at"],["Stop","your safety exit. If the price falls to it you sell and take a small loss, so one bad trade cannot wreck you"],["Target","where you would sell for a profit"],["Spread","the gap between the buy and sell price. A wide gap costs you money immediately"],["4/4","all four checks of a strategy passed"],["Do not chase","if the price is already above this, skip it. The move has happened and you would be buying late"],["Reward/risk","how much you could win compared with how much you could lose. 2 means a win pays about twice a loss"],["RSI","a 0 to 100 gauge of how fast the price has risen. Very high can mean it has run too far"],["Volume","how much is being traded. High volume means more people are involved"]]);
+  add("Before you tap Buy",[["1","Is the alert under 5 minutes old?"],["2","Is the live price in Coinbase still under the do-not-chase price?"],["3","Is your stop set at the same time as the buy?"],["4","Is the amount small enough that losing it would not hurt?"]]);
+  add("Habits that protect you",[["Start small","use 10 to 20 on your first trades while you learn"],["Never move a stop down","that just turns a small loss into a big one"],["Skip what confuses you","missing a trade costs nothing"],["Expect losses","even good systems lose often. This is normal"],["Keep records","use the Research tab to see what the rules really did"]]);
+  l.append(h("div","foot","This is education, not financial advice. Crypto can lose value quickly and you can lose everything you put in."));
+  v.append(l);vHealth(v)}
 function vHealth(v){
   const e=D.he;if(!e){v.append(h("div","empty","No health data yet."));return}
   const el=h("div","card"),rows=[["Version",e.version],["Held back at last re-check",(D.l?.coins||[]).filter(c=>c.held).length+" coins"],["Last successful scan",e.last_success?fmtT(e.last_success):"None yet"],["Last Coinbase connection",e.last_api_ok?fmtT(e.last_api_ok):"None yet"],["Last Telegram send",e.telegram?(e.telegram.ok?"Delivered ":"Failed: ")+fmtT(e.telegram.time):"No alert sent yet"],["Errors",e.errors&&e.errors.length?e.errors.length+" this scan":"None"]];
