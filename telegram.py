@@ -11,8 +11,8 @@ def fp(p):
 
 def syd(ts): return datetime.fromtimestamp(ts, timezone.utc).astimezone(SYD).strftime("%a %d %b %H:%M:%S %Z")
 
-def format_alert(pair, res, plan, quote_ccy):
-    return (f"🟢 <b>CONFIRMED 4/4 — {pair}</b>\n{res['strategy']}\n\n"
+def format_alert(pair, res, plan, quote_ccy, others=None):
+    return (f"🟢 <b>CONFIRMED 4/4 — {pair}</b>\n{res['strategy']}\n" + (f"Also confirmed here: {', '.join(others)}\n" if others else "") + "\n"
         f"Time: {syd(res['now'])}\nCandle closed: {syd(res['candle_t'] + res['gran'])}\nQuote time: {syd(plan['quote_time'])}\n\n"
         f"Bid {fp(plan['bid'])} / Ask {fp(plan['ask'])} (spread {plan['spread_pct']:.2f}%)\n"
         f"Entry ≈ {fp(plan['entry'])} {quote_ccy}\nDo NOT chase above {fp(plan['max_entry'])}\n"

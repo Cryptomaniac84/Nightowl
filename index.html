@@ -84,6 +84,7 @@ function card(x,stale){
   const el=h("div","card "+cls),r=h("div","row");
   r.append(h("div","pair",c.pair),h("div","chip",x.st==="CONFIRMED"?"Confirmed 4/4":x.st==="BLOCKED"?"Blocked":"Watch "+s.met+"/"+s.total));
   el.append(r,h("div","mute",s.strategy+", candle closed "+Math.round((D.l.time-s.candle_t)/60)+" min before the scan"));
+  if(x.others&&x.others.length)el.append(h("div","mute","Also "+(x.st==="CONFIRMED"?"confirmed":"flagged")+" here: "+x.others.join(", ")));
   const ul=h("ul","cond");Object.entries(s.conditions).forEach(([k,ok])=>ul.append(h("li",ok?"ok":"no",(ok?"✓ ":"✗ ")+k.replace(/_/g," "))));el.append(ul);
   const g=h("div","grid");const cell=(a,b)=>{const d=h("div");d.append(h("span",0,a),h("b",0,b));g.append(d)};
   cell("Bid",num(c.bid));cell("Ask",num(c.ask));cell("RSI / volume",s.rsi.toFixed(0)+" / "+s.rel_volume.toFixed(2)+"x");
@@ -97,8 +98,17 @@ function card(x,stale){
   const a=h("a","btn go","Open on Coinbase");a.href="https://www.coinbase.com/en-au/advanced-trade/spot/"+encodeURIComponent(c.pair);a.target="_blank";a.rel="noopener";b.append(a);el.append(b);
   if(x.st==="CONFIRMED")el.append(h("div","foot","Manual trade only. NightOwl has placed no order. Check the live price, and set your own stop on Coinbase."));
   return el}
+function group(list){
+  const m=new Map();
+  list.forEach(x=>{const cur=m.get(x.c.pair),sc=y=>(y.s.plan&&y.s.plan.net_rr)||0;
+    if(!cur){m.set(x.c.pair,{...x,others:[]});return}
+    const better=rank(x)<rank(cur)||(rank(x)===rank(cur)&&(sc(x)>sc(cur)||(sc(x)===sc(cur)&&x.s.met>cur.s.met)));
+    if(better)m.set(x.c.pair,{...x,others:rank(cur)===rank(x)?[...cur.others,cur.s.strategy]:[]});
+    else if(rank(x)===rank(cur))cur.others.push(x.s.strategy)});
+  return [...m.values()]}
 function vOpp(v,stale){
-  const list=setups().filter(x=>rank(x)<9).sort((a,b)=>rank(a)-rank(b)||b.s.met-a.s.met).filter(x=>x.st!=="WATCH"||x.s.met>=2).slice(0,12);
+  const base=setups().filter(x=>rank(x)<9&&(x.st!=="WATCH"||x.s.met>=2));
+  const list=group(base).sort((a,b)=>rank(a)-rank(b)||b.s.met-a.s.met).slice(0,12);
   if(!list.length){v.append(h("div","empty","No setups close to confirming. NightOwl checks again every few minutes, and Telegram alerts you if one is confirmed."));return}
   list.forEach(x=>v.append(card(x,stale)))}
 function vWatch(v){

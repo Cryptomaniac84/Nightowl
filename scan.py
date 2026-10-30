@@ -2,6 +2,10 @@ import sys, time, traceback
 import coinbase as cb, strategies as st, risk, state, telegram as tg
 VERSION = "0.1.0"
 
+def choose(confirmed):
+    """Best confirmed setup for a pair: highest estimated net reward/risk."""
+    return max(confirmed, key=lambda x: x[1]["net_rr"])
+
 def main(cfg_path="config.json", data_dir="data"):
     cfg = state.load(cfg_path, {}); now = time.time()
     sent = state.load(f"{data_dir}/sent.json", {}); hist = state.load(f"{data_dir}/history.json", [])
@@ -25,16 +29,24 @@ def main(cfg_path="config.json", data_dir="data"):
         except cb.ApiError as e:
             health["errors"].append(str(e)); coins.append({"symbol": sym, "pair": pid, "status": "DATA_ERROR"}); continue
         row = {"symbol": sym, "pair": pid, "bid": q["bid"], "ask": q["ask"], "setups": []}
+        confirmed = []
         for res in st.evaluate_all(c5, c15, cfg["mode"]):
             plan = risk.build_plan(res, q, prod, cfg, now)
             gran = 900 if res["strategy"].startswith("A") else 300
             row["setups"].append({**res, "plan": plan})
-            if plan["status"] == "CONFIRMED" and state.should_alert(sent, pid, res["strategy"], res["candle_t"], now, cfg["cooldown_minutes"]):
-                ok, info = tg.send(tg.format_alert(pid, {**res, "now": now, "gran": gran}, plan, prod["quote_currency_id"]))
+            if plan["status"] == "CONFIRMED":
+                confirmed.append((res, plan, gran))
+        if confirmed:
+            # One alert per pair: several strategies firing together is one opportunity.
+            res, plan, gran = choose(confirmed)
+            others = [r["strategy"] for r, _, _ in confirmed if r is not res]
+            if state.should_alert(sent, pid, "ALL", res["candle_t"], now, cfg["cooldown_minutes"]):
+                ok, info = tg.send(tg.format_alert(pid, {**res, "now": now, "gran": gran}, plan, prod["quote_currency_id"], others))
                 health["telegram"] = {"ok": ok, "info": info, "time": now}
-                if ok or info == "Telegram secrets not set":
-                    if ok: sent = state.record(sent, pid, res["strategy"], res["candle_t"], now)
-                    hist.append({"time": now, "pair": pid, "strategy": res["strategy"], "candle_t": res["candle_t"], "plan": plan, "alerted": ok})
+                if ok: sent = state.record(sent, pid, "ALL", res["candle_t"], now)
+                if not any(h["pair"] == pid and h["candle_t"] == res["candle_t"] for h in hist[-50:]):
+                    hist.append({"time": now, "pair": pid, "strategy": res["strategy"], "also": others,
+                                 "candle_t": res["candle_t"], "plan": plan, "alerted": ok})
         coins.append(row)
     health["scan_finished"] = time.time(); health["last_success"] = health["scan_finished"] if not health["errors"] else None
     state.save(f"{data_dir}/latest.json", {"time": now, "coins": coins})

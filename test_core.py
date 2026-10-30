@@ -53,4 +53,14 @@ class TP(unittest.TestCase):
     def test_small_prices_not_scientific(self):
         self.assertEqual(tg.fp(0.00000501),"0.000005010"); self.assertNotIn("e",tg.fp(0.0000000123))
         self.assertEqual(tg.fp(76649.62),"76,649.62")
+class OneAlert(unittest.TestCase):
+    def test_best_setup_chosen_and_extras_listed(self):
+        import scan
+        a=({"strategy":"A"},{"net_rr":1.9},900); b=({"strategy":"B"},{"net_rr":1.7},300)
+        self.assertEqual(scan.choose([b,a])[0]["strategy"],"A")
+    def test_alert_mentions_other_strategies(self):
+        res={'strategy':'A','now':1793340000,'candle_t':1793339700,'gran':300,'rsi':60,'rel_volume':2}
+        plan={'quote_time':1793340000,'bid':1,'ask':1.001,'spread_pct':.1,'entry':1.001,'max_entry':1.008,'stop':.97,'risk_pct':3,'target':1.07,'gross_rr':2.5,'net_rr':1.9,'position':50,'profit_if_target_net':3,'loss_if_stop_net':-2}
+        self.assertIn("Also confirmed here: B",tg.format_alert('X-USDC',res,plan,'USDC',['B']))
+        self.assertNotIn("Also confirmed",tg.format_alert('X-USDC',res,plan,'USDC'))
 if __name__=="__main__": unittest.main()
