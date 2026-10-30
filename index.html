@@ -50,7 +50,7 @@ nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
 <div class="bar"><i id="prog"></i></div>
 <div id="warn"></div>
 <main id="view"></main>
-<nav><button data-t="opp" class="on">Opportunities</button><button data-t="watch">Watchlist</button><button data-t="hist">Alert history</button><button data-t="health">Health</button></nav>
+<nav><button data-t="opp" class="on">Now</button><button data-t="watch">Watchlist</button><button data-t="hist">Alerts</button><button data-t="res">Research</button><button data-t="health">Health</button></nav>
 <script>
 const TZ="Australia/Sydney",$=s=>document.querySelector(s);
 const fmtT=t=>new Date(t*1000).toLocaleString("en-AU",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
@@ -60,8 +60,8 @@ function h(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=
 let D={},tab="opp",lastLoad=0;
 async function j(f){try{const r=await fetch(f+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;return await r.json()}catch(e){return null}}
 async function load(){
-  const [l,hi,he]=await Promise.all([j("data/latest.json"),j("data/history.json"),j("data/health.json")]);
-  D={l,hi:hi||[],he};lastLoad=Date.now();render();
+  const [l,hi,he,pa]=await Promise.all([j("data/latest.json"),j("data/history.json"),j("data/health.json"),j("data/paper.json")]);
+  D={l,hi:hi||[],he,pa:pa||[]};lastLoad=Date.now();render();
 }
 function setups(){
   const out=[];(D.l?.coins||[]).forEach(c=>(c.setups||[]).forEach(s=>out.push({c,s,st:s.plan?.status})));return out}
@@ -76,7 +76,7 @@ function render(){
   const w=$("#warn");w.replaceChildren();
   if(stale&&D.l){w.append(h("div","warn","The last scan was "+age+" minutes ago. Do not act on anything below until a fresh scan runs. Check the Health tab."))}
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
-  const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,health:vHealth})[tab](v,stale);
+  const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,res:vRes,health:vHealth})[tab](v,stale);
 }
 function copyBtn(label,val){const b=h("button",0,"Copy "+label);b.onclick=async()=>{try{await navigator.clipboard.writeText(String(val));b.textContent="Copied"}catch(e){b.textContent=String(val)}};return b}
 function card(x,stale){
@@ -124,9 +124,29 @@ function vHist(v){
     r.append(h("div","pair",a.pair),h("div","chip",exp?"Expired":"Check live price"));el.append(r,h("div","mute",a.strategy+", sent "+fmtT(a.time)+" ("+(age<120?age+" min":Math.round(age/60)+" h")+" ago)"));
     const p=a.plan;if(p&&p.entry)el.append(h("div","mute","Entry "+num(p.entry)+", stop "+num(p.stop)+", target "+num(p.target)+(a.alerted?"":" (Telegram not delivered)")));
     el.append(h("div","foot",exp?"This signal is old. Do not trade it from this screen.":"Signals go stale fast. Check the live price first."));v.append(el)})}
+function stat(rs){
+  const done=rs.filter(r=>r.outcome==="win"||r.outcome==="loss"),w=done.filter(r=>r.outcome==="win").length,net=rs.filter(r=>r.net_pct!=null);
+  return {n:rs.length,done:done.length,wr:done.length?w/done.length*100:null,avg:net.length?net.reduce((a,r)=>a+r.net_pct,0)/net.length:null,
+    open:rs.filter(r=>r.outcome==="open").length,unk:rs.filter(r=>r.outcome==="unknown").length}}
+function line(label,rs){
+  const s=stat(rs),d=h("div","coin"),l=h("div");l.append(h("b",0,label),h("div","mute",s.n+" signals, "+s.done+" decided"+(s.open?", "+s.open+" open":"")+(s.unk?", "+s.unk+" unknown":"")));
+  const r=h("div","mute",s.done?s.wr.toFixed(0)+"% won, avg "+(s.avg>=0?"+":"")+s.avg.toFixed(2)+"%":"–");d.append(l,r);return d}
+function vRes(v){
+  const rs=D.pa||[],el=h("div","card");
+  el.append(h("div","pair","Paper research"),h("div","mute","Hypothetical only. These are not real trades or real profits. Each signal assumes entry at the ask, the stop wins if both levels touch in one candle, and 0.8% costs are deducted."));
+  if(!rs.length){el.append(h("div","empty","Nothing recorded yet. Every 4/4 signal, allowed or blocked, is tracked from now on."));v.append(el);return}
+  el.append(line("All signals",rs),line("Allowed (alerted)",rs.filter(r=>r.group==="allowed")),line("Blocked by safety checks",rs.filter(r=>r.group==="blocked")));
+  [...new Set(rs.map(r=>r.strategy))].sort().forEach(s=>el.append(line(s,rs.filter(r=>r.strategy===s))));
+  const dn=stat(rs).done;if(dn<30)el.append(h("div","reasons","Only "+dn+" decided so far. Too few to draw conclusions: expect results to swing a lot until there are 30 or more."));
+  const b=h("div","btns"),dl=h("button",0,"Download CSV");dl.onclick=()=>{
+    const cols=["created","pair","strategy","group","entry","stop","target","outcome","exit","net_pct","blocked_by"];
+    const q=x=>'"'+String(x==null?"":Array.isArray(x)?x.join("; "):x).replace(/"/g,'""')+'"';
+    const csv=[cols.join(",")].concat(rs.map(r=>cols.map(c=>q(c==="created"?new Date(r.created*1000).toISOString():r[c])).join(","))).join("\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="nightowl-paper.csv";a.click()};
+  b.append(dl);el.append(b);v.append(el)}
 function vHealth(v){
   const e=D.he;if(!e){v.append(h("div","empty","No health data yet."));return}
-  const el=h("div","card"),rows=[["Version",e.version],["Last successful scan",e.last_success?fmtT(e.last_success):"None yet"],["Last Coinbase connection",e.last_api_ok?fmtT(e.last_api_ok):"None yet"],["Last Telegram send",e.telegram?(e.telegram.ok?"Delivered ":"Failed: ")+fmtT(e.telegram.time):"No alert sent yet"],["Errors",e.errors&&e.errors.length?e.errors.length+" this scan":"None"]];
+  const el=h("div","card"),rows=[["Version",e.version],["Held back at last re-check",(D.l?.coins||[]).filter(c=>c.held).length+" coins"],["Last successful scan",e.last_success?fmtT(e.last_success):"None yet"],["Last Coinbase connection",e.last_api_ok?fmtT(e.last_api_ok):"None yet"],["Last Telegram send",e.telegram?(e.telegram.ok?"Delivered ":"Failed: ")+fmtT(e.telegram.time):"No alert sent yet"],["Errors",e.errors&&e.errors.length?e.errors.length+" this scan":"None"]];
   rows.forEach(r=>{const d=h("div","coin");d.append(h("span","mute",r[0]),h("b",0,r[1]));el.append(d)});
   (e.errors||[]).slice(0,5).forEach(x=>el.append(h("div","reasons",x)));
   el.append(h("div","foot","Scans are scheduled every 5 minutes but GitHub can delay them. Coinbase availability for your account must be confirmed in Coinbase."));v.append(el)}
