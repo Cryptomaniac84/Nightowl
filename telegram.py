@@ -22,7 +22,7 @@ def format_alert(pair, res, plan, quote_ccy):
         f"Illustrative size {plan['position']:.0f} {quote_ccy}: est. net +{plan['profit_if_target_net']:.2f} at target, "
         f"{plan['loss_if_stop_net']:.2f} at stop (assumed costs only, not your verified fees).\n\n"
         f"⚠️ Manual trade. Nothing has been ordered. Confirm your stop/bracket on Coinbase yourself; gaps and slippage can exceed the plan.\n"
-        f"https://www.coinbase.com/advanced-trade/spot/{pair}")
+        f"https://www.coinbase.com/en-au/advanced-trade/spot/{pair}")
 
 def send(text, token=None, chat=None, opener=urllib.request.urlopen):
     token = token or os.environ.get("TELEGRAM_BOT_TOKEN"); chat = chat or os.environ.get("TELEGRAM_CHAT_ID")
