@@ -41,7 +41,7 @@ a.btn.go{background:var(--blue)}
 .coin .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:var(--line)}
 .dot.green{background:var(--green)}.dot.amber{background:var(--amber)}.dot.red{background:var(--red)}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#0D1428;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;background:none;border-radius:0;color:var(--mute);padding:14px 0;min-height:56px}
+nav button{flex:1;font-size:13px;padding-left:2px;padding-right:2px;background:none;border-radius:0;color:var(--mute);padding:14px 0;min-height:56px}
 nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
 .foot{color:var(--mute);font-size:13px;padding:8px 0 0}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -54,7 +54,7 @@ nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
 <script>
 const TZ="Australia/Sydney",$=s=>document.querySelector(s);
 const fmtT=t=>new Date(t*1000).toLocaleString("en-AU",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
-const num=v=>v==null?"–":(v>=100?v.toFixed(2):v>=1?v.toFixed(4):v.toPrecision(4));
+const num=v=>v==null?"–":(v>=100?v.toFixed(2):v>=1?v.toFixed(4):v.toFixed(Math.max(4,3-Math.floor(Math.log10(v)))));
 const mins=t=>Math.max(0,Math.round((Date.now()/1000-t)/60));
 function h(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
 let D={},tab="opp",lastLoad=0;
@@ -83,10 +83,10 @@ function card(x,stale){
   const {c,s}=x,p=s.plan,cls=x.st==="CONFIRMED"?"confirmed":x.st==="BLOCKED"?"blocked":"watch";
   const el=h("div","card "+cls),r=h("div","row");
   r.append(h("div","pair",c.pair),h("div","chip",x.st==="CONFIRMED"?"Confirmed 4/4":x.st==="BLOCKED"?"Blocked":"Watch "+s.met+"/"+s.total));
-  el.append(r,h("div","mute",s.strategy+", candle closed "+mins(s.candle_t)+" min ago"));
+  el.append(r,h("div","mute",s.strategy+", candle closed "+Math.round((D.l.time-s.candle_t)/60)+" min before the scan"));
   const ul=h("ul","cond");Object.entries(s.conditions).forEach(([k,ok])=>ul.append(h("li",ok?"ok":"no",(ok?"✓ ":"✗ ")+k.replace(/_/g," "))));el.append(ul);
   const g=h("div","grid");const cell=(a,b)=>{const d=h("div");d.append(h("span",0,a),h("b",0,b));g.append(d)};
-  cell("Bid / ask",num(c.bid)+" / "+num(c.ask));cell("RSI / volume",s.rsi.toFixed(0)+" / "+s.rel_volume.toFixed(2)+"x");
+  cell("Bid",num(c.bid));cell("Ask",num(c.ask));cell("RSI / volume",s.rsi.toFixed(0)+" / "+s.rel_volume.toFixed(2)+"x");
   if(p.entry){cell("Entry",num(p.entry));cell("Do not chase above",num(p.max_entry));cell("Stop",num(p.stop)+" (−"+p.risk_pct.toFixed(1)+"%)");cell("Target",num(p.target));cell("Net reward/risk",p.net_rr.toFixed(2));cell("Spread",p.spread_pct.toFixed(2)+"%")}
   el.append(g);
   if(p.entry)el.append(h("div","mute","On "+p.position+": about +"+p.profit_if_target_net.toFixed(2)+" at target or "+p.loss_if_stop_net.toFixed(2)+" at stop, after assumed 0.8% costs. Estimates only."));

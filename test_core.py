@@ -49,4 +49,8 @@ class T(unittest.TestCase):
         self.assertEqual(len(calls),3)
     def test_telegram_without_secrets_does_not_crash(self):
         import os; os.environ.pop("TELEGRAM_BOT_TOKEN",None); self.assertFalse(tg.send("hi")[0])
+class TP(unittest.TestCase):
+    def test_small_prices_not_scientific(self):
+        self.assertEqual(tg.fp(0.00000501),"0.000005010"); self.assertNotIn("e",tg.fp(0.0000000123))
+        self.assertEqual(tg.fp(76649.62),"76,649.62")
 if __name__=="__main__": unittest.main()
