@@ -2,14 +2,22 @@ import sys, time, traceback
 import coinbase as cb, strategies as st, risk, state, telegram as tg, paper
 VERSION = "0.2.0"
 
+DEFAULTS = {"watchlist": ["BTC", "ETH", "SOL", "XRP", "DOGE", "SUI", "HBAR", "ZEC", "BNB", "HYPE", "LTC", "PEPE"], "quote_preference": ["USDC", "USD"], "mode": "balanced", "bankroll": 150, "position_size": 50, "round_trip_cost_pct": 0.8, "max_spread_pct": 0.65, "max_chase_pct": 0.75, "stop_min_pct": 1.0, "stop_max_pct": 5.0, "target_r_multiple": 2.5, "min_net_rr": 1.25, "quote_max_age_sec": 120, "cooldown_minutes": 90, "request_delay_sec": 0.25}
+
 def choose(confirmed):
     """Best confirmed setup for a pair: highest estimated net reward/risk."""
     return max(confirmed, key=lambda x: x[1]["net_rr"])
 
 def main(cfg_path="config.json", data_dir="data"):
-    cfg = state.load(cfg_path, {}); now = time.time()
+    import json as _j
+    cfg_err = None
+    try:
+        with open(cfg_path) as f: user = _j.load(f)
+    except Exception as e:
+        user, cfg_err = {}, f"config.json could not be read ({type(e).__name__}); using built-in defaults. Check it for a typo."
+    cfg = {**DEFAULTS, **user}; now = time.time()
     sent = state.load(f"{data_dir}/sent.json", {}); hist = state.load(f"{data_dir}/history.json", [])
-    health = {"version": VERSION, "scan_started": now, "errors": [], "telegram": None}
+    health = {"version": VERSION, "scan_started": now, "errors": [cfg_err] if cfg_err else [], "telegram": None}
     coins, signals = [], []
     paper_recs = state.load(f"{data_dir}/paper.json", [])
     try:
@@ -57,7 +65,8 @@ def main(cfg_path="config.json", data_dir="data"):
                     if ok: sent = state.record(sent, pid, "ALL", res["candle_t"], now)
                     if not any(h["pair"] == pid and h["candle_t"] == res["candle_t"] for h in hist[-50:]):
                         hist.append({"time": now, "pair": pid, "strategy": res["strategy"], "also": others,
-                                     "candle_t": res["candle_t"], "plan": plan, "alerted": ok})
+                                     "candle_t": res["candle_t"], "plan": plan, "alerted": ok,
+                                     "conditions": res["conditions"], "rsi": res["rsi"], "rel_volume": res["rel_volume"]})
         paper.resolve(paper_recs, pid, c5, now, cfg["round_trip_cost_pct"])
         coins.append(row)
     health["scan_finished"] = time.time(); health["last_success"] = health["scan_finished"] if not health["errors"] else None
@@ -68,4 +77,9 @@ def main(cfg_path="config.json", data_dir="data"):
 
 if __name__ == "__main__":
     try: sys.exit(main())
-    except Exception: traceback.print_exc(); sys.exit(1)
+    except Exception as e:
+        traceback.print_exc()
+        try:
+            state.save("data/health.json", {"version": VERSION, "scan_started": time.time(), "last_success": None, "errors": ["Scanner crashed: " + type(e).__name__ + ": " + str(e)[:200]], "telegram": None})
+        except Exception: pass
+        sys.exit(1)

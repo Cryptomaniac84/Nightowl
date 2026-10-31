@@ -45,6 +45,8 @@ nav button{flex:1;font-size:13px;padding-left:2px;padding-right:2px;background:n
 nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
 .plain{margin:10px 0;padding:9px 11px;background:#0F2240;border-radius:8px;font-size:14px;line-height:1.5}
 .learn h3{margin:14px 0 6px;font-size:16px}.learn p,.learn li{font-size:14px;color:var(--mute);margin:4px 0}.learn li b{color:var(--text)}
+.fld{display:block;margin:8px 0}.fld span{display:block;color:var(--mute);font-size:13px;margin-bottom:3px}.fld input,.fld select{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px}
+.trade{padding:12px 0;border-top:1px solid var(--line)}
 .foot{color:var(--mute);font-size:13px;padding:8px 0 0}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
@@ -52,7 +54,7 @@ nav button.on{color:var(--text);box-shadow:inset 0 3px 0 var(--blue)}
 <div class="bar"><i id="prog"></i></div>
 <div id="warn"></div>
 <main id="view"></main>
-<nav><button data-t="opp" class="on">Now</button><button data-t="watch">Watchlist</button><button data-t="hist">Alerts</button><button data-t="res">Research</button><button data-t="more">More</button></nav>
+<nav><button data-t="opp" class="on">Now</button><button data-t="watch">Watchlist</button><button data-t="hist">Alerts</button><button data-t="res">Track</button><button data-t="more">More</button></nav>
 <script>
 const TZ="Australia/Sydney",$=s=>document.querySelector(s);
 const fmtT=t=>new Date(t*1000).toLocaleString("en-AU",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false,timeZoneName:"short"});
@@ -76,16 +78,18 @@ function render(){
   $("#sub").replaceChildren();
   if(D.l){const s=$("#sub");s.append("Last scan ",h("b",0,fmtT(D.l.time))," (",h("b",0,age+" min ago"),"), "+(D.l.coins||[]).length+" coins checked")}
   const w=$("#warn");w.replaceChildren();
+  if(D.he&&D.he.errors&&D.he.errors.length)w.append(h("div","warn","Scanner problem: "+D.he.errors[0]));
   if(stale&&D.l){w.append(h("div","warn","The last scan was "+age+" minutes ago. Do not act on anything below until a fresh scan runs. Check the Health tab."))}
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
-  const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,res:vRes,more:vMore})[tab](v,stale);
+  const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,res:vTrack,more:vMore})[tab](v,stale);
 }
 function copyBtn(label,val){const b=h("button",0,"Copy "+label);b.onclick=async()=>{try{await navigator.clipboard.writeText(String(val));b.textContent="Copied"}catch(e){b.textContent=String(val)}};return b}
 function card(x,stale){
   const {c,s}=x,p=s.plan,cls=x.st==="CONFIRMED"?"confirmed":x.st==="BLOCKED"?"blocked":"watch";
   const el=h("div","card "+cls),r=h("div","row");
   r.append(h("div","pair",c.pair),h("div","chip",x.st==="CONFIRMED"?"Confirmed 4/4":x.st==="BLOCKED"?"Blocked":"Watch "+s.met+"/"+s.total));
-  el.append(r,h("div","mute",s.strategy+", candle closed "+Math.round((D.l.time-s.candle_t)/60)+" min before the scan"));
+  el.append(r,h("div","mute",s.strategy+", candle closed "+Math.round(((x.ref||D.l.time)-s.candle_t)/60)+(x.ref?" min before the alert":" min before the scan")));
+  if(x.ref)el.append(h("div","mute","Alerted "+mins(x.ref)+" min ago, so check the live price first. It may be gone from the 5-minute snapshot below."));
   if(x.others&&x.others.length)el.append(h("div","mute","Also "+(x.st==="CONFIRMED"?"confirmed":"flagged")+" here: "+x.others.join(", ")));
   const ul=h("ul","cond");Object.entries(s.conditions).forEach(([k,ok])=>ul.append(h("li",ok?"ok":"no",(ok?"✓ ":"✗ ")+k.replace(/_/g," "))));el.append(ul);
   const g=h("div","grid");const cell=(a,b)=>{const d=h("div");d.append(h("span",0,a),h("b",0,b));g.append(d)};
@@ -101,7 +105,7 @@ function card(x,stale){
   if(p.reasons&&p.reasons.length&&x.st!=="WATCH"){const rs=h("div","reasons");rs.append(h("b",0,"Why blocked: "),p.reasons.join("; "));el.append(rs)}
   else if(x.st==="WATCH"){el.append(h("div","mute","Not confirmed: "+Object.entries(s.conditions).filter(e=>!e[1]).map(e=>e[0].replace(/_/g," ")).join(", ")))}
   const b=h("div","btns");
-  if(x.st==="CONFIRMED"&&!stale){b.append(copyBtn("entry",num(p.entry)),copyBtn("stop",num(p.stop)),copyBtn("target",num(p.target)))}
+  if(x.st==="CONFIRMED"&&!stale){b.append(copyBtn("entry",num(p.entry)),copyBtn("stop",num(p.stop)),copyBtn("target",num(p.target)));const lg=h("button",0,"Log my trade");lg.onclick=()=>{draft={pair:c.pair,strat:s.strategy[0],stop:num(p.stop),target:num(p.target)};tab="res";render();scrollTo(0,0)};b.append(lg)}
   const pr=encodeURIComponent(c.pair),web="https://www.coinbase.com/en-au/advanced-trade/spot/"+pr;
   const ap=h("a","btn go","Open Coinbase app");ap.href="intent://www.coinbase.com/advanced-trade/spot/"+pr+"#Intent;scheme=https;package=com.coinbase.android;S.browser_fallback_url="+encodeURIComponent(web)+";end";b.append(ap);
   const a=h("a","btn","Website");a.href=web;a.target="_blank";a.rel="noopener";b.append(a);el.append(b);
@@ -118,7 +122,10 @@ function group(list){
 function vOpp(v,stale){
   const base=setups().filter(x=>rank(x)<9&&(x.st!=="WATCH"||x.s.met>=2));
   const list=group(base).sort((a,b)=>rank(a)-rank(b)||b.s.met-a.s.met).slice(0,12);
-  if(!list.length){v.append(h("div","empty","No setups close to confirming. NightOwl checks again every few minutes, and Telegram alerts you if one is confirmed."));return}
+  const have=new Set(list.filter(x=>x.st==="CONFIRMED").map(x=>x.c.pair+"|"+x.s.candle_t));
+  const fresh=[...D.hi].reverse().filter(a=>mins(a.time)<=15&&a.plan&&a.plan.entry&&!have.has(a.pair+"|"+a.candle_t)).map(a=>({c:{pair:a.pair,bid:a.plan.bid,ask:a.plan.ask},s:{strategy:a.strategy,conditions:a.conditions||{},met:4,total:4,rsi:a.rsi||0,rel_volume:a.rel_volume||0,candle_t:a.candle_t,plan:a.plan},st:"CONFIRMED",others:a.also||[],ref:a.time}));
+  if(fresh.length){v.append(h("div","foot","Just alerted on Telegram (last 15 minutes)"));fresh.forEach(x=>v.append(card(x,false)))}
+  if(!list.length&&!fresh.length){v.append(h("div","empty","No setups close to confirming. NightOwl checks again every few minutes, and Telegram alerts you if one is confirmed."));return}
   list.forEach(x=>v.append(card(x,stale)))}
 function vWatch(v){
   (D.l?.coins||[]).forEach(c=>{const best=(c.setups||[]).reduce((m,s)=>Math.max(m,s.met),0),st=(c.setups||[]).some(s=>s.plan?.status==="CONFIRMED")?"green":(c.setups||[]).some(s=>s.plan?.status==="BLOCKED")?"red":best>=2?"amber":"";
@@ -131,6 +138,48 @@ function vHist(v){
     r.append(h("div","pair",a.pair),h("div","chip",exp?"Expired":"Check live price"));el.append(r,h("div","mute",a.strategy+", sent "+fmtT(a.time)+" ("+(age<120?age+" min":Math.round(age/60)+" h")+" ago)"));
     const p=a.plan;if(p&&p.entry)el.append(h("div","mute","Entry "+num(p.entry)+", stop "+num(p.stop)+", target "+num(p.target)+(a.alerted?"":" (Telegram not delivered)")));
     el.append(h("div","foot",exp?"This signal is old. Do not trade it from this screen.":"Signals go stale fast. Check the live price first."));v.append(el)})}
+const JK="nightowl.journal.v1";let JMEM=[],draft=null,exitFor=null,xd={};
+function jload(){try{return JSON.parse(localStorage.getItem(JK)||"[]")}catch(e){return JMEM}}
+function jsave(a){JMEM=a;try{localStorage.setItem(JK,JSON.stringify(a))}catch(e){}}
+function field(label,key,obj,ph,n){const w=h("label","fld"),i=document.createElement("input");w.append(h("span",0,label));i.value=obj[key]||"";i.placeholder=ph||"";if(n)i.inputMode="decimal";i.oninput=()=>{obj[key]=i.value};w.append(i);return w}
+function jform(){
+  const f=h("div"),d=draft;
+  f.append(field("Pair (for example ZEC-USDC)","pair",d,"ZEC-USDC"),field("Price you paid (the fill price)","entry",d,"1251.66",1),field("Coin amount you bought","qty",d,"0.0279309",1),field("Total paid in USDC, including the fee","paid",d,"35.00",1),field("Your stop price","stop",d,"",1),field("Your target price","target",d,"",1),field("Notes (optional)","notes",d,""));
+  const s=h("label","fld"),sel=document.createElement("select");s.append(h("span",0,"Strategy"));
+  [["A","A: 15m confirmation"],["B","B: 5m breakout"],["C","C: 5m pullback"],["X","Other / my own idea"]].forEach(o=>{const e=document.createElement("option");e.value=o[0];e.textContent=o[1];if(o[0]===d.strat)e.selected=true;sel.append(e)});
+  sel.onchange=()=>{d.strat=sel.value};s.append(sel);f.append(s);
+  const msg=h("div","reasons");msg.hidden=true;const sv=h("button",0,"Save trade");
+  sv.onclick=()=>{const e=+d.entry,p=+d.paid;if(!d.pair||!(e>0)||!(p>0)){msg.hidden=false;msg.textContent="Please fill in the pair, the price you paid and the total paid.";return}
+    const a=jload();a.push({id:Date.now(),opened:Date.now()/1000,pair:d.pair.toUpperCase().trim(),strat:d.strat||"B",entry:e,qty:+d.qty||null,paid:p,stop:+d.stop||null,target:+d.target||null,notes:d.notes||""});jsave(a);draft=null;render()};
+  f.append(msg,sv);return f}
+function jrow(t){
+  const el=h("div","trade"),r=h("div","row");
+  r.append(h("b",0,t.pair),h("span",t.net==null?"mute":t.net>=0?"ok":"no",t.net==null?"Open":(t.net>=0?"+":"")+t.net.toFixed(2)+" USDC ("+(t.net>=0?"+":"")+(t.net/t.paid*100).toFixed(1)+"%)"));
+  el.append(r,h("div","mute",fmtT(t.opened)+", strategy "+t.strat+(t.notes?", "+t.notes:"")),h("div","mute","Paid "+num(t.entry)+", total "+t.paid.toFixed(2)+" USDC"+(t.stop?", stop "+num(t.stop):"")+(t.target?", target "+num(t.target):"")));
+  if(t.net!=null&&t.exit_total!=null)el.append(h("div","mute","Received "+t.exit_total.toFixed(2)+" USDC"+(t.exit?" (sold at "+num(t.exit)+")":"")));
+  const b=h("div","btns");
+  if(t.net==null){const x=h("button",0,exitFor===t.id?"Cancel":"Record exit");x.onclick=()=>{exitFor=exitFor===t.id?null:t.id;xd={};render()};b.append(x)}
+  const del=h("button",0,"Delete");del.onclick=()=>{if(confirm("Delete this trade from your journal?")){jsave(jload().filter(z=>z.id!==t.id));render()}};b.append(del);
+  el.append(b);
+  if(exitFor===t.id){const f=h("div"),msg=h("div","reasons");msg.hidden=true;
+    f.append(field("Price you sold at (optional)","xp",xd,"",1),field("Total received in USDC, after the fee","xr",xd,"",1));
+    const sv=h("button",0,"Save exit");sv.onclick=()=>{const g=+xd.xr;if(!(g>0)){msg.hidden=false;msg.textContent="Enter the total you received in USDC.";return}
+      const a=jload(),z=a.find(q=>q.id===t.id);z.exit=+xd.xp||null;z.exit_total=g;z.net=g-z.paid;z.closed=Date.now()/1000;jsave(a);exitFor=null;render()};
+    f.append(msg,sv);el.append(f)}
+  return el}
+function vJournal(v){
+  const all=jload(),c=h("div","card"),done=all.filter(t=>t.net!=null),wins=done.filter(t=>t.net>0).length,tot=done.reduce((a,t)=>a+t.net,0);
+  c.append(h("div","pair","My trades"),h("div","mute","Your own Coinbase trades, typed in by you. NightOwl never marks a trade as filled. They are saved only on this phone, so download the CSV now and then as a backup."));
+  if(done.length)c.append(h("div","plain",done.length+" closed, "+wins+" won. Total result "+(tot>=0?"+":"")+tot.toFixed(2)+" USDC, using the real totals you entered."));
+  const b=h("div","btns"),add=h("button",0,draft?"Cancel":"Add a trade");add.onclick=()=>{draft=draft?null:{strat:"B"};render()};b.append(add);
+  const dl=h("button",0,"Download CSV");dl.onclick=()=>{const cols=["opened","pair","strat","entry","qty","paid","stop","target","exit","exit_total","net","notes"],q=x=>'"'+String(x==null?"":x).replace(/"/g,'""')+'"';
+    const csv=[cols.join(",")].concat(all.map(t=>cols.map(k=>q(k==="opened"?new Date(t.opened*1000).toISOString():t[k])).join(","))).join("\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="nightowl-journal.csv";a.click()};b.append(dl);c.append(b);
+  if(draft)c.append(jform());
+  if(!all.length&&!draft)c.append(h("div","empty","No trades yet. Tap Add a trade after you buy on Coinbase, or tap Log my trade on a confirmed card."));
+  all.slice().reverse().sort((a,b)=>(a.net!=null)-(b.net!=null)).forEach(t=>c.append(jrow(t)));
+  v.append(c)}
+function vTrack(v){vJournal(v);vRes(v)}
 function stat(rs){
   const done=rs.filter(r=>r.outcome==="win"||r.outcome==="loss"),w=done.filter(r=>r.outcome==="win").length,net=rs.filter(r=>r.net_pct!=null);
   return {n:rs.length,done:done.length,wr:done.length?w/done.length*100:null,avg:net.length?net.reduce((a,r)=>a+r.net_pct,0)/net.length:null,

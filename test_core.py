@@ -83,4 +83,11 @@ class Paper(unittest.TestCase):
     def test_duplicate_signal_recorded_once(self):
         recs=[]; res={"strategy":"B: x","candle_t":1000}; plan={"status":"BLOCKED","reasons":["spread"],"entry":1,"stop":.9,"target":1.2}
         self.assertTrue(self.P.record_new(recs,"X-USDC",res,plan,5)); self.assertFalse(self.P.record_new(recs,"X-USDC",res,plan,6)); self.assertEqual(recs[0]["group"],"blocked")
+class Cfg(unittest.TestCase):
+    def test_broken_config_is_reported_not_silent(self):
+        import scan, tempfile, os, json, coinbase as cb
+        d=tempfile.mkdtemp(); bad=os.path.join(d,"c.json"); open(bad,"w").write('{"watchlist": ["BTC" "ETH"]}')
+        cb.tradable_products=lambda:{}
+        scan.main(bad,d); h=json.load(open(os.path.join(d,"health.json")))
+        self.assertTrue(any("config.json" in e for e in h["errors"]))
 if __name__=="__main__": unittest.main()
