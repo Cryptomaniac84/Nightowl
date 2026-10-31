@@ -12,30 +12,29 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: python -m unittest discover -s . -p "test_*.py"
-      - name: Scan every 5 minutes
+      - name: Scan every minute
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name scanner-bot
           git config user.email bot@users.noreply.github.com
-          for i in 1 2 3 4 5; do
+          INTERVAL=60
+          RUNS=30
+          for i in $(seq 1 $RUNS); do
             start=$(date +%s)
             python scan.py || true
-            git add data || true
-            git diff --cached --quiet || (git commit -q -m "scan data" && git pull --rebase -q && git push -q) || true
+            if [ $((i % 5)) -eq 0 ]; then git add data || true; else git add data/sent.json data/history.json data/paper.json || true; fi
+            git diff --cached --quiet || (git commit -q -m "scan data" && git pull --rebase --autostash -q && git push -q) || true
+            if [ "$i" -eq 28 ]; then gh workflow run scan.yml || true; fi
             elapsed=$(( $(date +%s) - start ))
-            if [ "$i" -lt 5 ] && [ "$elapsed" -lt 300 ]; then sleep $(( 300 - elapsed )); fi
+            if [ "$i" -lt "$RUNS" ] && [ "$elapsed" -lt "$INTERVAL" ]; then sleep $(( INTERVAL - elapsed )); fi
           done
-      - name: Start the next run
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run scan.yml
