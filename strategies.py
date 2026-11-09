@@ -12,8 +12,10 @@ def completed(candles, gran_sec, now):
 def _series(cs):
     return [c["c"] for c in cs], [c["h"] for c in cs], [c["v"] for c in cs]
 
-def _result(name, conds, cs, rs, rv):
-    return {"strategy": name, "conditions": conds, "met": sum(conds.values()), "total": len(conds),
+def _result(name, conds, cs, rs, rv, lb=12):
+    closes = [c["c"] for c in cs]
+    runup = (closes[-1] / closes[-1 - lb] - 1) * 100 if len(closes) > lb and closes[-1 - lb] > 0 else None
+    return {"runup_pct": runup, "strategy": name, "conditions": conds, "met": sum(conds.values()), "total": len(conds),
             "confirmed": all(conds.values()), "rsi": rs, "rel_volume": rv,
             "candle_t": cs[-1]["t"], "close": cs[-1]["c"],
             "swing_low": min(c["l"] for c in cs[-10:])}
@@ -27,7 +29,7 @@ def strategy_a(c15, mode="balanced"):
              "rsi_48_76": 48 - m["rsi_pad"] <= r <= 76 + m["rsi_pad"],
              "rel_vol_1.15": rv >= 1.15 * m["vol"],
              "breaks_13_candle_high": closes[i] > max(highs[i - 13:i])}
-    return _result("A: 15m Confirmation", conds, c15, r, rv)
+    return _result("A: 15m Confirmation", conds, c15, r, rv, 4)
 
 def strategy_b(c5, c15, mode="balanced"):
     m = MODES[mode]; closes, highs, vols = _series(c5)

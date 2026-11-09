@@ -64,8 +64,8 @@ function h(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=
 let D={},tab="opp",lastLoad=0;
 async function j(f){try{const r=await fetch(f+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;return await r.json()}catch(e){return null}}
 async function load(){
-  const [l,hi,he,pa]=await Promise.all([j("data/latest.json"),j("data/history.json"),j("data/health.json"),j("data/paper.json")]);
-  D={l,hi:hi||[],he,pa:pa||[]};lastLoad=Date.now();render();
+  const [l,hi,he,pa,gp]=await Promise.all([j("data/latest.json"),j("data/history.json"),j("data/health.json"),j("data/paper.json"),j("data/gap.json")]);
+  D={l,hi:hi||[],he,pa:pa||[],gp};lastLoad=Date.now();render();
 }
 function setups(){
   const out=[];(D.l?.coins||[]).forEach(c=>(c.setups||[]).forEach(s=>out.push({c,s,st:s.plan?.status})));return out}
@@ -79,7 +79,7 @@ function render(){
   if(D.l){const s=$("#sub");s.append("Last scan ",h("b",0,fmtT(D.l.time))," (",h("b",0,age+" min ago"),"), "+(D.l.coins||[]).length+" coins checked")}
   const w=$("#warn");w.replaceChildren();
   if(D.he&&D.he.errors&&D.he.errors.length)w.append(h("div","warn","Scanner problem: "+D.he.errors[0]));
-  if(stale&&D.l){w.append(h("div","warn","The last scan was "+age+" minutes ago. Do not act on anything below until a fresh scan runs. Check the Health tab."))}
+  if(stale&&D.l){w.append(h("div","warn","The last scan was "+age+" minutes ago. Do not act on anything below until a fresh scan runs. Tap More at the bottom to see why."))}
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
   const v=$("#view");v.replaceChildren();({opp:vOpp,watch:vWatch,hist:vHist,res:vTrack,more:vMore})[tab](v,stale);
 }
@@ -191,7 +191,7 @@ function vRes(v){
   const rs=D.pa||[],el=h("div","card");
   el.append(h("div","pair","Paper research"),h("div","mute","Hypothetical only. These are not real trades or real profits. Each signal assumes entry at the ask, the stop wins if both levels touch in one candle, and 0.8% costs are deducted."));
   if(!rs.length){el.append(h("div","empty","Nothing recorded yet. Every 4/4 signal, allowed or blocked, is tracked from now on."));v.append(el);return}
-  el.append(line("All signals",rs),line("Allowed (alerted)",rs.filter(r=>r.group==="allowed")),line("Blocked by safety checks",rs.filter(r=>r.group==="blocked")));
+  el.append(line("All signals",rs),line("Allowed (alerted)",rs.filter(r=>r.group==="allowed")),line("Blocked by safety checks",rs.filter(r=>r.group==="blocked")),line("Strategy switched off (not alerted)",rs.filter(r=>r.group==="muted")));
   [...new Set(rs.map(r=>r.strategy))].sort().forEach(s=>el.append(line(s,rs.filter(r=>r.strategy===s))));
   const dn=stat(rs).done;if(dn<30)el.append(h("div","reasons","Only "+dn+" decided so far. Too few to draw conclusions: expect results to swing a lot until there are 30 or more."));
   const b=h("div","btns"),dl=h("button",0,"Download CSV");dl.onclick=()=>{
@@ -207,7 +207,20 @@ function vMore(v){
   add("Before you tap Buy",[["1","Is the alert under 5 minutes old?"],["2","Is the live price in Coinbase still under the do-not-chase price?"],["3","Is your stop set at the same time as the buy?"],["4","Is the amount small enough that losing it would not hurt?"]]);
   add("Habits that protect you",[["Start small","use 10 to 20 on your first trades while you learn"],["Never move a stop down","that just turns a small loss into a big one"],["Skip what confuses you","missing a trade costs nothing"],["Expect losses","even good systems lose often. This is normal"],["Keep records","use the Research tab to see what the rules really did"]]);
   l.append(h("div","foot","This is education, not financial advice. Crypto can lose value quickly and you can lose everything you put in."));
-  v.append(l);vHealth(v)}
+  v.append(l);vGap(v);vHealth(v)}
+function vGap(v){
+  const g=D.gp,c=h("div","card");
+  c.append(h("div","pair","Gap monitor"),h("div","mute","Watch only. NightOwl does not trade this. It compares Coinbase with Kraken for the same coin and the same quote currency (USDC with USDC, USD with USD). Fees are assumptions, and the best case is shown: money already on both exchanges, no transfer cost or delay."));
+  if(!g){c.append(h("div","empty","No gap data yet. It appears after the next scan.")); v.append(c); return}
+  if(g.error)c.append(h("div","reasons","Kraken could not be reached: "+g.error));
+  const st=g.stats||{};
+  if(st.checks!=null)c.append(h("div","plain","Since "+fmtT(st.since)+": "+st.checks+" comparisons. A gap existed "+st.gross_pos+" times, and it was still positive after fees (and deep enough for your order size) "+st.net_pos+" times."+(st.best?" Best after fees: "+(st.best.net>=0?"+":"")+st.best.net.toFixed(2)+"% on "+st.best.symbol+".":"")));
+  (g.rows||[]).forEach(r=>{const d=h("div","coin"),l=h("div");
+    l.append(h("b",0,r.symbol+" ("+r.quote+")"),h("div","mute",r.direction+(r.thin?", too thin for your order size":"")+(r.stale?", stale price":"")));
+    d.append(l,h("div",r.net_pct>0&&!r.thin&&!r.stale?"ok":"no","gap "+r.gross_pct.toFixed(2)+"%, after fees "+(r.net_pct>=0?"+":"")+r.net_pct.toFixed(2)+"%"));c.append(d)});
+  (g.skipped||[]).forEach(s=>c.append(h("div","mute",s.symbol+": "+s.why)));
+  if(g.time)c.append(h("div","foot","Updated "+fmtT(g.time)+". Assumed fees: Coinbase "+(g.assumptions?g.assumptions.coinbase_fee_pct:"?")+"% and Kraken "+(g.assumptions?g.assumptions.kraken_fee_pct:"?")+"% per trade. Your real fees may differ."));
+  v.append(c)}
 function vHealth(v){
   const e=D.he;if(!e){v.append(h("div","empty","No health data yet."));return}
   const el=h("div","card"),rows=[["Version",e.version],["Held back at last re-check",(D.l?.coins||[]).filter(c=>c.held).length+" coins"],["Last successful scan",e.last_success?fmtT(e.last_success):"None yet"],["Last Coinbase connection",e.last_api_ok?fmtT(e.last_api_ok):"None yet"],["Last Telegram send",e.telegram?(e.telegram.ok?"Delivered ":"Failed: ")+fmtT(e.telegram.time):"No alert sent yet"],["Errors",e.errors&&e.errors.length?e.errors.length+" this scan":"None"]];

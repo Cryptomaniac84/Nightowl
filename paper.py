@@ -3,14 +3,14 @@
 def gran_of(strategy):
     return 900 if strategy.startswith("A") else 300
 
-def record_new(recs, pair, res, plan, now):
+def record_new(recs, pair, res, plan, now, group=None):
     rid = f"{pair}|{res['strategy'][0]}|{res['candle_t']}"
     if any(r["id"] == rid for r in recs[-600:]):
         return False
     ok = plan["status"] == "CONFIRMED"
     recs.append({"id": rid, "pair": pair, "strategy": res["strategy"], "candle_t": res["candle_t"],
-                 "created": now, "group": "allowed" if ok else "blocked",
-                 "blocked_by": [] if ok else plan.get("reasons", []),
+                 "created": now, "group": group or ("allowed" if ok else "blocked"),
+                 "blocked_by": [] if ok or group else plan.get("reasons", []),
                  "entry": plan["entry"], "stop": plan["stop"], "target": plan["target"], "outcome": "open"})
     return True
 

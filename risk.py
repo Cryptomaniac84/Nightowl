@@ -27,6 +27,12 @@ def build_plan(res, quote, product, cfg, now):
     net_rr = (reward_pct - cost) / (risk_pct + cost)
     if net_rr < cfg["min_net_rr"]:
         reasons.append(f"Net reward/risk {net_rr:.2f} below {cfg['min_net_rr']} after {cost}% costs")
+    if cfg.get("late_guard", True):
+        rsi_v, run = res.get("rsi"), res.get("runup_pct")
+        if rsi_v is not None and rsi_v > cfg.get("max_rsi", 68):
+            reasons.append(f"Likely late: RSI {rsi_v:.0f} is above {cfg.get('max_rsi', 68)}, so the price may already be stretched")
+        if run is not None and run > cfg.get("max_runup_pct", 3.0):
+            reasons.append(f"Likely late: the price is already up {run:.1f}% in the last hour (limit {cfg.get('max_runup_pct', 3.0)}%)")
     size = cfg["position_size"]
     if size < float(product.get("quote_min_size") or 0) or size / entry < float(product.get("base_min_size") or 0):
         reasons.append("Position is below Coinbase minimum order size")

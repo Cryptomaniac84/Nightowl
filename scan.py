@@ -1,8 +1,10 @@
 import sys, time, traceback
-import coinbase as cb, strategies as st, risk, state, telegram as tg, paper
+import coinbase as cb, strategies as st, risk, state, telegram as tg, paper, gap
 VERSION = "0.2.0"
 
 DEFAULTS = {"watchlist": ["BTC", "ETH", "SOL", "XRP", "DOGE", "SUI", "HBAR", "ZEC", "BNB", "HYPE", "LTC", "PEPE"], "quote_preference": ["USDC", "USD"], "mode": "balanced", "bankroll": 150, "position_size": 50, "round_trip_cost_pct": 0.8, "max_spread_pct": 0.65, "max_chase_pct": 0.75, "stop_min_pct": 1.0, "stop_max_pct": 5.0, "target_r_multiple": 2.5, "min_net_rr": 1.25, "quote_max_age_sec": 120, "cooldown_minutes": 90, "request_delay_sec": 0.25}
+
+DEFAULTS.update({"gap_enabled": True, "gap_fee_cb_pct": 0.11, "gap_fee_kr_pct": 0.26, "gap_every_sec": 280, "strategies_enabled": ["A", "B", "C"], "late_guard": True, "max_rsi": 68, "max_runup_pct": 3.0})
 
 def choose(confirmed):
     """Best confirmed setup for a pair: highest estimated net reward/risk."""
@@ -19,6 +21,7 @@ def main(cfg_path="config.json", data_dir="data"):
     sent = state.load(f"{data_dir}/sent.json", {}); hist = state.load(f"{data_dir}/history.json", [])
     health = {"version": VERSION, "scan_started": now, "errors": [cfg_err] if cfg_err else [], "telegram": None}
     coins, signals = [], []
+    gap_targets = []
     paper_recs = state.load(f"{data_dir}/paper.json", [])
     try:
         products = cb.tradable_products(); health["last_api_ok"] = time.time()
@@ -29,6 +32,7 @@ def main(cfg_path="config.json", data_dir="data"):
         if not prod:
             coins.append({"symbol": sym, "status": "UNAVAILABLE", "note": "No tradable USDC/USD spot market on Coinbase"}); continue
         pid = prod["product_id"]
+        gap_targets.append((sym, pid, prod["quote_currency_id"]))
         try:
             c5 = st.completed(cb.candles(pid, "FIVE_MINUTE", now), 300, now)
             time.sleep(cfg["request_delay_sec"])
@@ -43,9 +47,10 @@ def main(cfg_path="config.json", data_dir="data"):
             plan = risk.build_plan(res, q, prod, cfg, now)
             gran = 900 if res["strategy"].startswith("A") else 300
             row["setups"].append({**res, "plan": plan})
+            on = res["strategy"][0] in cfg["strategies_enabled"]
             if res["confirmed"] and plan.get("entry"):
-                paper.record_new(paper_recs, pid, res, plan, now)
-            if plan["status"] == "CONFIRMED":
+                paper.record_new(paper_recs, pid, res, plan, now, None if on else "muted")
+            if plan["status"] == "CONFIRMED" and on:
                 confirmed.append((res, plan, gran))
         if confirmed:
             # One alert per pair: several strategies firing together is one opportunity.
@@ -69,6 +74,8 @@ def main(cfg_path="config.json", data_dir="data"):
                                      "conditions": res["conditions"], "rsi": res["rsi"], "rel_volume": res["rel_volume"]})
         paper.resolve(paper_recs, pid, c5, now, cfg["round_trip_cost_pct"])
         coins.append(row)
+    try: gap.run(gap_targets, cfg, now, data_dir)
+    except Exception as e: health["errors"].append("gap monitor: " + type(e).__name__)
     health["scan_finished"] = time.time(); health["last_success"] = health["scan_finished"] if not health["errors"] else None
     state.save(f"{data_dir}/latest.json", {"time": now, "coins": coins})
     state.save(f"{data_dir}/paper.json", paper.trim(paper_recs))

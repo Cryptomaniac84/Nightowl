@@ -90,4 +90,43 @@ class Cfg(unittest.TestCase):
         cb.tradable_products=lambda:{}
         scan.main(bad,d); h=json.load(open(os.path.join(d,"health.json")))
         self.assertTrue(any("config.json" in e for e in h["errors"]))
+class GapT(unittest.TestCase):
+    import gap as G
+    CFG={"gap_fee_cb_pct":0.11,"gap_fee_kr_pct":0.26,"position_size":50,"quote_max_age_sec":120}
+    def books(self,cb_ask=100.0,kr_bid=100.5,size=1.0):
+        return ({"bid":99.9,"ask":cb_ask,"bid_size":size,"ask_size":size,"time":1000},{"bid":kr_bid,"ask":100.6,"bid_size":size,"ask_size":size})
+    def test_gap_math_and_fees(self):
+        c,k=self.books(); r=self.G.compare("X","USDC",c,k,self.CFG,1010)
+        self.assertAlmostEqual(r["gross_pct"],0.5,3); self.assertAlmostEqual(r["net_pct"],0.13,3); self.assertEqual(r["direction"],"Buy Coinbase, sell Kraken")
+    def test_negative_after_costs(self):
+        c,k=self.books(kr_bid=100.2); self.assertLess(self.G.compare("X","USDC",c,k,self.CFG,1010)["net_pct"],0)
+    def test_thin_and_stale_flagged(self):
+        c,k=self.books(size=0.1); r=self.G.compare("X","USDC",c,k,self.CFG,1500); self.assertTrue(r["thin"]); self.assertTrue(r["stale"])
+    def test_run_skips_missing_quote_and_survives_kraken_failure(self):
+        import tempfile,json,os
+        d=tempfile.mkdtemp(); cfg=dict(self.CFG,gap_every_sec=0)
+        self.G.kraken_pairs=lambda o=None:{("XBT","USDC"):"XBTUSDC"}
+        self.G.cb_book=lambda pid:self.books()[0]; self.G.kraken_book=lambda a,o=None:self.books()[1]
+        self.G.time.sleep=lambda s:None
+        self.G.run([("BTC","BTC-USDC","USDC"),("PEPE","PEPE-USDC","USDC")],cfg,1010,d)
+        j=json.load(open(os.path.join(d,"gap.json"))); self.assertEqual(len(j["rows"]),1); self.assertEqual(j["skipped"][0]["symbol"],"PEPE")
+        self.assertEqual(j["stats"]["checks"],0 if j["rows"][0]["stale"] else 1)
+        def boom(o=None): raise RuntimeError("kraken down")
+        self.G.kraken_pairs=boom; self.G.run([("BTC","BTC-USDC","USDC")],cfg,2000,d)
+        self.assertIn("error",json.load(open(os.path.join(d,"gap.json"))))
+class LateGuard(unittest.TestCase):
+    def cfg(self,**k): return dict(CFG,**k)
+    def test_high_rsi_blocked_with_reason(self):
+        p=risk.build_plan(dict(CONF,rsi=73.4),QUOTE,PROD,self.cfg(max_rsi=68),1010); self.assertEqual(p["status"],"BLOCKED"); self.assertTrue(any("Likely late: RSI" in x for x in p["reasons"]))
+    def test_big_runup_blocked(self):
+        p=risk.build_plan(dict(CONF,rsi=60,runup_pct=5.2),QUOTE,PROD,self.cfg(max_runup_pct=3.0),1010); self.assertTrue(any("up 5.2%" in x for x in p["reasons"]))
+    def test_calm_signal_passes_and_guard_can_be_off(self):
+        self.assertEqual(risk.build_plan(dict(CONF,rsi=60,runup_pct=1.0),QUOTE,PROD,self.cfg(),1010)["status"],"CONFIRMED")
+        self.assertEqual(risk.build_plan(dict(CONF,rsi=80,runup_pct=9),QUOTE,PROD,self.cfg(late_guard=False),1010)["status"],"CONFIRMED")
+    def test_runup_computed_on_signal_timeframe(self):
+        cs=mk([100+i*0.1 for i in range(59)]+[110]); r=st.strategy_a(cs)
+        self.assertAlmostEqual(r["runup_pct"],(110/cs[-5]["c"]-1)*100,3)
+    def test_muted_strategy_recorded_but_flagged(self):
+        import paper as P; recs=[]; res={"strategy":"A: x","candle_t":5}; plan={"status":"CONFIRMED","entry":1,"stop":.9,"target":1.2}
+        P.record_new(recs,"X-USDC",res,plan,1,"muted"); self.assertEqual(recs[0]["group"],"muted"); self.assertEqual(recs[0]["blocked_by"],[])
 if __name__=="__main__": unittest.main()
