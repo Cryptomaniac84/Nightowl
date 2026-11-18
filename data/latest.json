@@ -1,11 +1,11 @@
 {
- "time": 1795044253.7212162,
+ "time": 1795044510.6426158,
  "coins": [
   {
    "symbol": "BTC",
    "pair": "BTC-USDC",
-   "bid": 62702.11,
-   "ask": 62702.12,
+   "bid": 62582.04,
+   "ask": 62582.05,
    "setups": [
     {
      "runup_pct": 0.36651377332432844,
@@ -33,32 +33,32 @@
      }
     },
     {
-     "runup_pct": 0.12379061253187107,
+     "runup_pct": 0.44259852611341355,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
+      "breaks_12_candle_high": true,
       "rel_vol_1.25": false,
       "rsi_50_78": true,
       "15m_trend_up": false
      },
-     "met": 1,
+     "met": 2,
      "total": 4,
      "confirmed": false,
-     "rsi": 51.808980085746384,
-     "rel_volume": 0.3520029279265096,
-     "candle_t": 1795043700,
-     "close": 62448.66,
+     "rsi": 59.57724888420623,
+     "rel_volume": 0.6940832342233443,
+     "candle_t": 1795044000,
+     "close": 62696.27,
      "swing_low": 62000.0,
      "plan": {
-      "status": "WAIT",
-      "met": "1/4",
+      "status": "WATCH",
+      "met": "2/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, 15m_trend_up"
+       "Not confirmed. Unmet: rel_vol_1.25, 15m_trend_up"
       ]
      }
     },
     {
-     "runup_pct": 0.12379061253187107,
+     "runup_pct": 0.44259852611341355,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
@@ -69,10 +69,10 @@
      "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 51.808980085746384,
-     "rel_volume": 0.3520029279265096,
-     "candle_t": 1795043700,
-     "close": 62448.66,
+     "rsi": 59.57724888420623,
+     "rel_volume": 0.6940832342233443,
+     "candle_t": 1795044000,
+     "close": 62696.27,
      "swing_low": 62000.0,
      "plan": {
       "status": "WAIT",
@@ -87,8 +87,8 @@
   {
    "symbol": "ETH",
    "pair": "ETH-USDC",
-   "bid": 1770.73,
-   "ask": 1770.9,
+   "bid": 1768.31,
+   "ask": 1768.51,
    "setups": [
     {
      "runup_pct": 0.22986418148487342,
@@ -116,52 +116,65 @@
      }
     },
     {
-     "runup_pct": 0.03744128525722257,
+     "runup_pct": 0.5143723351709317,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
-      "rel_vol_1.25": false,
+      "breaks_12_candle_high": true,
+      "rel_vol_1.25": true,
       "rsi_50_78": true,
       "15m_trend_up": true
      },
-     "met": 2,
+     "met": 4,
      "total": 4,
-     "confirmed": false,
-     "rsi": 53.588119600743724,
-     "rel_volume": 0.2151457089728346,
-     "candle_t": 1795043700,
-     "close": 1763.42,
+     "confirmed": true,
+     "rsi": 60.08743865668566,
+     "rel_volume": 1.5243995823547525,
+     "candle_t": 1795044000,
+     "close": 1770.43,
      "swing_low": 1747.73,
      "plan": {
-      "status": "WATCH",
-      "met": "2/4",
+      "entry": 1768.51,
+      "max_entry": 1783.708225,
+      "stop": 1747.73,
+      "target": 1820.46,
+      "spread_pct": 0.011309594494491973,
+      "risk_pct": 1.1750004240858107,
+      "gross_rr": 2.5,
+      "net_rr": 1.0822787854356712,
+      "position": 50,
+      "loss_if_stop_net": -0.9875002120429053,
+      "profit_if_target_net": 1.0687505301072635,
+      "bid": 1768.31,
+      "ask": 1768.51,
+      "quote_time": 1795044511.654401,
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25"
-      ]
+       "Net reward/risk 1.08 below 1.25 after 0.8% costs"
+      ],
+      "status": "BLOCKED"
      }
     },
     {
-     "runup_pct": 0.03744128525722257,
+     "runup_pct": 0.5143723351709317,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": true,
       "5m_ema9_above_ema20": true,
       "reclaims_ema9": false,
-      "rsi_48_74_vol_1.0": false
+      "rsi_48_74_vol_1.0": true
      },
-     "met": 2,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 53.588119600743724,
-     "rel_volume": 0.2151457089728346,
-     "candle_t": 1795043700,
-     "close": 1763.42,
+     "rsi": 60.08743865668566,
+     "rel_volume": 1.5243995823547525,
+     "candle_t": 1795044000,
+     "close": 1770.43,
      "swing_low": 1747.73,
      "plan": {
       "status": "WATCH",
-      "met": "2/4",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: reclaims_ema9, rsi_48_74_vol_1.0"
+       "Not confirmed. Unmet: reclaims_ema9"
       ]
      }
     }
@@ -170,8 +183,8 @@
   {
    "symbol": "SOL",
    "pair": "SOL-USDC",
-   "bid": 73.29,
-   "ask": 73.3,
+   "bid": 73.22,
+   "ask": 73.23,
    "setups": [
     {
      "runup_pct": 0.5500550055005604,
@@ -199,32 +212,32 @@
      }
     },
     {
-     "runup_pct": 0.10975442447522799,
+     "runup_pct": 0.7142857142857117,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
+      "breaks_12_candle_high": true,
       "rel_vol_1.25": false,
       "rsi_50_78": true,
       "15m_trend_up": true
      },
-     "met": 2,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 52.10223688776894,
-     "rel_volume": 0.4740922239889475,
-     "candle_t": 1795043700,
-     "close": 72.97,
+     "rsi": 59.111459108491346,
+     "rel_volume": 0.9016323853705033,
+     "candle_t": 1795044000,
+     "close": 73.32,
      "swing_low": 72.24,
      "plan": {
       "status": "WATCH",
-      "met": "2/4",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25"
+       "Not confirmed. Unmet: rel_vol_1.25"
       ]
      }
     },
     {
-     "runup_pct": 0.10975442447522799,
+     "runup_pct": 0.7142857142857117,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": true,
@@ -235,10 +248,10 @@
      "met": 2,
      "total": 4,
      "confirmed": false,
-     "rsi": 52.10223688776894,
-     "rel_volume": 0.4740922239889475,
-     "candle_t": 1795043700,
-     "close": 72.97,
+     "rsi": 59.111459108491346,
+     "rel_volume": 0.9016323853705033,
+     "candle_t": 1795044000,
+     "close": 73.32,
      "swing_low": 72.24,
      "plan": {
       "status": "WATCH",
@@ -253,8 +266,8 @@
   {
    "symbol": "XRP",
    "pair": "XRP-USDC",
-   "bid": 0.9654,
-   "ask": 0.9655,
+   "bid": 0.9646,
+   "ask": 0.9647,
    "setups": [
     {
      "runup_pct": 0.11429758935992407,
@@ -282,52 +295,52 @@
      }
     },
     {
-     "runup_pct": -0.2697655115169062,
+     "runup_pct": 0.39517470881864636,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
       "breaks_12_candle_high": false,
       "rel_vol_1.25": false,
-      "rsi_50_78": false,
+      "rsi_50_78": true,
       "15m_trend_up": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 45.08497018983781,
-     "rel_volume": 0.49554667198381896,
-     "candle_t": 1795043700,
-     "close": 0.9612,
+     "rsi": 52.46484942073308,
+     "rel_volume": 0.9705643154700259,
+     "candle_t": 1795044000,
+     "close": 0.9654,
      "swing_low": 0.9545,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, rsi_50_78, 15m_trend_up"
+       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, 15m_trend_up"
       ]
      }
     },
     {
-     "runup_pct": -0.2697655115169062,
+     "runup_pct": 0.39517470881864636,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
       "5m_ema9_above_ema20": false,
-      "reclaims_ema9": false,
+      "reclaims_ema9": true,
       "rsi_48_74_vol_1.0": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 45.08497018983781,
-     "rel_volume": 0.49554667198381896,
-     "candle_t": 1795043700,
-     "close": 0.9612,
+     "rsi": 52.46484942073308,
+     "rel_volume": 0.9705643154700259,
+     "candle_t": 1795044000,
+     "close": 0.9654,
      "swing_low": 0.9545,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, reclaims_ema9, rsi_48_74_vol_1.0"
+       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, rsi_48_74_vol_1.0"
       ]
      }
     }
@@ -336,8 +349,8 @@
   {
    "symbol": "DOGE",
    "pair": "DOGE-USDC",
-   "bid": 0.05849,
-   "ask": 0.05852,
+   "bid": 0.05845,
+   "ask": 0.05848,
    "setups": [
     {
      "runup_pct": 0.18890606216728223,
@@ -365,32 +378,32 @@
      }
     },
     {
-     "runup_pct": -0.20565552699228773,
+     "runup_pct": 0.39471426119788156,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
       "breaks_12_candle_high": false,
       "rel_vol_1.25": false,
-      "rsi_50_78": false,
+      "rsi_50_78": true,
       "15m_trend_up": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 47.19091760954697,
-     "rel_volume": 0.7955840822219702,
-     "candle_t": 1795043700,
-     "close": 0.05823,
+     "rsi": 54.88213422427354,
+     "rel_volume": 0.17448723865095617,
+     "candle_t": 1795044000,
+     "close": 0.0585,
      "swing_low": 0.05762,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, rsi_50_78, 15m_trend_up"
+       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, 15m_trend_up"
       ]
      }
     },
     {
-     "runup_pct": -0.20565552699228773,
+     "runup_pct": 0.39471426119788156,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
@@ -401,10 +414,10 @@
      "met": 0,
      "total": 4,
      "confirmed": false,
-     "rsi": 47.19091760954697,
-     "rel_volume": 0.7955840822219702,
-     "candle_t": 1795043700,
-     "close": 0.05823,
+     "rsi": 54.88213422427354,
+     "rel_volume": 0.17448723865095617,
+     "candle_t": 1795044000,
+     "close": 0.0585,
      "swing_low": 0.05762,
      "plan": {
       "status": "WAIT",
@@ -420,7 +433,7 @@
    "symbol": "SUI",
    "pair": "SUI-USDC",
    "bid": 0.7157,
-   "ask": 0.7161,
+   "ask": 0.716,
    "setups": [
     {
      "runup_pct": 0.07021485746385725,
@@ -448,32 +461,32 @@
      }
     },
     {
-     "runup_pct": -0.22402688322598063,
+     "runup_pct": 0.5334830829706538,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
-      "rel_vol_1.25": false,
-      "rsi_50_78": false,
+      "breaks_12_candle_high": true,
+      "rel_vol_1.25": true,
+      "rsi_50_78": true,
       "15m_trend_up": false
      },
-     "met": 0,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 48.43094222517542,
-     "rel_volume": 1.1992118645142473,
-     "candle_t": 1795043700,
-     "close": 0.7126,
+     "rsi": 55.6946908856955,
+     "rel_volume": 1.9105597574270914,
+     "candle_t": 1795044000,
+     "close": 0.7161,
      "swing_low": 0.705,
      "plan": {
-      "status": "WAIT",
-      "met": "0/4",
+      "status": "WATCH",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, rsi_50_78, 15m_trend_up"
+       "Not confirmed. Unmet: 15m_trend_up"
       ]
      }
     },
     {
-     "runup_pct": -0.22402688322598063,
+     "runup_pct": 0.5334830829706538,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
@@ -484,10 +497,10 @@
      "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 48.43094222517542,
-     "rel_volume": 1.1992118645142473,
-     "candle_t": 1795043700,
-     "close": 0.7126,
+     "rsi": 55.6946908856955,
+     "rel_volume": 1.9105597574270914,
+     "candle_t": 1795044000,
+     "close": 0.7161,
      "swing_low": 0.705,
      "plan": {
       "status": "WAIT",
@@ -502,8 +515,8 @@
   {
    "symbol": "HBAR",
    "pair": "HBAR-USDC",
-   "bid": 0.05571,
-   "ask": 0.05572,
+   "bid": 0.05563,
+   "ask": 0.05566,
    "setups": [
     {
      "runup_pct": -0.16181229773463146,
@@ -531,52 +544,52 @@
      }
     },
     {
-     "runup_pct": -0.6278026905829681,
+     "runup_pct": 0.19780614997302326,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
       "breaks_12_candle_high": false,
       "rel_vol_1.25": false,
-      "rsi_50_78": false,
+      "rsi_50_78": true,
       "15m_trend_up": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 46.864870487246755,
-     "rel_volume": 0.45143322257441143,
-     "candle_t": 1795043700,
-     "close": 0.0554,
+     "rsi": 55.46852739798225,
+     "rel_volume": 0.7880137396399445,
+     "candle_t": 1795044000,
+     "close": 0.05572,
      "swing_low": 0.055,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, rsi_50_78, 15m_trend_up"
+       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, 15m_trend_up"
       ]
      }
     },
     {
-     "runup_pct": -0.6278026905829681,
+     "runup_pct": 0.19780614997302326,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
       "5m_ema9_above_ema20": false,
-      "reclaims_ema9": false,
+      "reclaims_ema9": true,
       "rsi_48_74_vol_1.0": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 46.864870487246755,
-     "rel_volume": 0.45143322257441143,
-     "candle_t": 1795043700,
-     "close": 0.0554,
+     "rsi": 55.46852739798225,
+     "rel_volume": 0.7880137396399445,
+     "candle_t": 1795044000,
+     "close": 0.05572,
      "swing_low": 0.055,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, reclaims_ema9, rsi_48_74_vol_1.0"
+       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, rsi_48_74_vol_1.0"
       ]
      }
     }
@@ -585,8 +598,8 @@
   {
    "symbol": "ZEC",
    "pair": "ZEC-USDC",
-   "bid": 906.95,
-   "ask": 907.19,
+   "bid": 905.48,
+   "ask": 905.78,
    "setups": [
     {
      "runup_pct": -0.3324526640246517,
@@ -614,7 +627,7 @@
      }
     },
     {
-     "runup_pct": -0.9267504369908641,
+     "runup_pct": -0.251994497936725,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
       "breaks_12_candle_high": false,
@@ -625,10 +638,10 @@
      "met": 0,
      "total": 4,
      "confirmed": false,
-     "rsi": 42.96364446514882,
-     "rel_volume": 1.2279280718280716,
-     "candle_t": 1795043700,
-     "close": 901.2,
+     "rsi": 49.46231162943652,
+     "rel_volume": 0.9460543665940566,
+     "candle_t": 1795044000,
+     "close": 906.46,
      "swing_low": 890.15,
      "plan": {
       "status": "WAIT",
@@ -639,27 +652,27 @@
      }
     },
     {
-     "runup_pct": -0.9267504369908641,
+     "runup_pct": -0.251994497936725,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
       "5m_ema9_above_ema20": false,
-      "reclaims_ema9": false,
+      "reclaims_ema9": true,
       "rsi_48_74_vol_1.0": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 42.96364446514882,
-     "rel_volume": 1.2279280718280716,
-     "candle_t": 1795043700,
-     "close": 901.2,
+     "rsi": 49.46231162943652,
+     "rel_volume": 0.9460543665940566,
+     "candle_t": 1795044000,
+     "close": 906.46,
      "swing_low": 890.15,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, reclaims_ema9, rsi_48_74_vol_1.0"
+       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, rsi_48_74_vol_1.0"
       ]
      }
     }
@@ -668,8 +681,8 @@
   {
    "symbol": "BNB",
    "pair": "BNB-USDC",
-   "bid": 581.04,
-   "ask": 581.18,
+   "bid": 580.74,
+   "ask": 580.79,
    "setups": [
     {
      "runup_pct": 0.3966947875344129,
@@ -697,32 +710,32 @@
      }
     },
     {
-     "runup_pct": 0.2094367708658007,
+     "runup_pct": 0.5261609290894143,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
+      "breaks_12_candle_high": true,
       "rel_vol_1.25": false,
       "rsi_50_78": true,
       "15m_trend_up": true
      },
-     "met": 2,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 55.577668524274664,
-     "rel_volume": 0.662419618138031,
-     "candle_t": 1795043700,
-     "close": 578.95,
+     "rsi": 62.606707533841416,
+     "rel_volume": 0.6702298257683649,
+     "candle_t": 1795044000,
+     "close": 580.81,
      "swing_low": 574.54,
      "plan": {
       "status": "WATCH",
-      "met": "2/4",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25"
+       "Not confirmed. Unmet: rel_vol_1.25"
       ]
      }
     },
     {
-     "runup_pct": 0.2094367708658007,
+     "runup_pct": 0.5261609290894143,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": true,
@@ -733,10 +746,10 @@
      "met": 2,
      "total": 4,
      "confirmed": false,
-     "rsi": 55.577668524274664,
-     "rel_volume": 0.662419618138031,
-     "candle_t": 1795043700,
-     "close": 578.95,
+     "rsi": 62.606707533841416,
+     "rel_volume": 0.6702298257683649,
+     "candle_t": 1795044000,
+     "close": 580.81,
      "swing_low": 574.54,
      "plan": {
       "status": "WATCH",
@@ -751,8 +764,8 @@
   {
    "symbol": "HYPE",
    "pair": "HYPE-USDC",
-   "bid": 66.72,
-   "ask": 66.74,
+   "bid": 66.63,
+   "ask": 66.64,
    "setups": [
     {
      "runup_pct": 0.6211180124223503,
@@ -780,52 +793,52 @@
      }
     },
     {
-     "runup_pct": 0.045283018867925406,
+     "runup_pct": 0.6793478260869623,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
+      "breaks_12_candle_high": true,
       "rel_vol_1.25": false,
-      "rsi_50_78": false,
+      "rsi_50_78": true,
       "15m_trend_up": false
      },
-     "met": 0,
+     "met": 2,
      "total": 4,
      "confirmed": false,
-     "rsi": 49.154161362157495,
-     "rel_volume": 0.2784056325923598,
-     "candle_t": 1795043700,
-     "close": 66.28,
+     "rsi": 58.791836046859586,
+     "rel_volume": 0.6770517678756041,
+     "candle_t": 1795044000,
+     "close": 66.69,
      "swing_low": 65.71,
      "plan": {
-      "status": "WAIT",
-      "met": "0/4",
+      "status": "WATCH",
+      "met": "2/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25, rsi_50_78, 15m_trend_up"
+       "Not confirmed. Unmet: rel_vol_1.25, 15m_trend_up"
       ]
      }
     },
     {
-     "runup_pct": 0.045283018867925406,
+     "runup_pct": 0.6793478260869623,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": false,
-      "5m_ema9_above_ema20": false,
+      "5m_ema9_above_ema20": true,
       "reclaims_ema9": false,
       "rsi_48_74_vol_1.0": false
      },
-     "met": 0,
+     "met": 1,
      "total": 4,
      "confirmed": false,
-     "rsi": 49.154161362157495,
-     "rel_volume": 0.2784056325923598,
-     "candle_t": 1795043700,
-     "close": 66.28,
+     "rsi": 58.791836046859586,
+     "rel_volume": 0.6770517678756041,
+     "candle_t": 1795044000,
+     "close": 66.69,
      "swing_low": 65.71,
      "plan": {
       "status": "WAIT",
-      "met": "0/4",
+      "met": "1/4",
       "reasons": [
-       "Not confirmed. Unmet: 15m_above_ema20, 5m_ema9_above_ema20, reclaims_ema9, rsi_48_74_vol_1.0"
+       "Not confirmed. Unmet: 15m_above_ema20, reclaims_ema9, rsi_48_74_vol_1.0"
       ]
      }
     }
@@ -834,8 +847,8 @@
   {
    "symbol": "LTC",
    "pair": "LTC-USDC",
-   "bid": 43.906,
-   "ask": 43.92,
+   "bid": 43.829,
+   "ask": 43.84,
    "setups": [
     {
      "runup_pct": 0.3989727597908832,
@@ -863,52 +876,52 @@
      }
     },
     {
-     "runup_pct": 0.011445838293200339,
+     "runup_pct": 0.7388540877905303,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
-      "breaks_12_candle_high": false,
+      "breaks_12_candle_high": true,
       "rel_vol_1.25": false,
       "rsi_50_78": true,
       "15m_trend_up": true
      },
-     "met": 2,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 51.22207533430716,
-     "rel_volume": 1.039615063176039,
-     "candle_t": 1795043700,
-     "close": 43.689,
+     "rsi": 58.62672312569065,
+     "rel_volume": 1.0499694859377418,
+     "candle_t": 1795044000,
+     "close": 43.903,
      "swing_low": 43.272,
      "plan": {
       "status": "WATCH",
-      "met": "2/4",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: breaks_12_candle_high, rel_vol_1.25"
+       "Not confirmed. Unmet: rel_vol_1.25"
       ]
      }
     },
     {
-     "runup_pct": 0.011445838293200339,
+     "runup_pct": 0.7388540877905303,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": true,
-      "5m_ema9_above_ema20": false,
+      "5m_ema9_above_ema20": true,
       "reclaims_ema9": false,
       "rsi_48_74_vol_1.0": true
      },
-     "met": 2,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 51.22207533430716,
-     "rel_volume": 1.039615063176039,
-     "candle_t": 1795043700,
-     "close": 43.689,
+     "rsi": 58.62672312569065,
+     "rel_volume": 1.0499694859377418,
+     "candle_t": 1795044000,
+     "close": 43.903,
      "swing_low": 43.272,
      "plan": {
       "status": "WATCH",
-      "met": "2/4",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: 5m_ema9_above_ema20, reclaims_ema9"
+       "Not confirmed. Unmet: reclaims_ema9"
       ]
      }
     }
@@ -917,8 +930,8 @@
   {
    "symbol": "PEPE",
    "pair": "PEPE-USDC",
-   "bid": 3.74e-06,
-   "ask": 3.75e-06,
+   "bid": 3.73e-06,
+   "ask": 3.74e-06,
    "setups": [
     {
      "runup_pct": 0.5376344086021501,
@@ -946,7 +959,7 @@
      }
     },
     {
-     "runup_pct": 0.0,
+     "runup_pct": 0.2680965147453085,
      "strategy": "B: 5m Momentum Breakout",
      "conditions": {
       "breaks_12_candle_high": false,
@@ -957,10 +970,10 @@
      "met": 2,
      "total": 4,
      "confirmed": false,
-     "rsi": 52.577897264421,
-     "rel_volume": 0.5947158690950989,
-     "candle_t": 1795043700,
-     "close": 3.73e-06,
+     "rsi": 55.97150984119199,
+     "rel_volume": 1.2097200837290323,
+     "candle_t": 1795044000,
+     "close": 3.74e-06,
      "swing_low": 3.67e-06,
      "plan": {
       "status": "WATCH",
@@ -971,27 +984,27 @@
      }
     },
     {
-     "runup_pct": 0.0,
+     "runup_pct": 0.2680965147453085,
      "strategy": "C: 5m Pullback Recovery",
      "conditions": {
       "15m_above_ema20": true,
       "5m_ema9_above_ema20": true,
       "reclaims_ema9": false,
-      "rsi_48_74_vol_1.0": false
+      "rsi_48_74_vol_1.0": true
      },
-     "met": 2,
+     "met": 3,
      "total": 4,
      "confirmed": false,
-     "rsi": 52.577897264421,
-     "rel_volume": 0.5947158690950989,
-     "candle_t": 1795043700,
-     "close": 3.73e-06,
+     "rsi": 55.97150984119199,
+     "rel_volume": 1.2097200837290323,
+     "candle_t": 1795044000,
+     "close": 3.74e-06,
      "swing_low": 3.67e-06,
      "plan": {
       "status": "WATCH",
-      "met": "2/4",
+      "met": "3/4",
       "reasons": [
-       "Not confirmed. Unmet: reclaims_ema9, rsi_48_74_vol_1.0"
+       "Not confirmed. Unmet: reclaims_ema9"
       ]
      }
     }
